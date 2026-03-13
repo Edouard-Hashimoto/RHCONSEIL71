@@ -29,7 +29,28 @@ export const useDb = () => {
         logo TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       );
+
+      CREATE TABLE IF NOT EXISTS settings (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL
+      );
     `);
+
+    const cols = db.prepare("PRAGMA table_info(news)").all() as { name: string }[];
+    if (!cols.some(c => c.name === 'image')) {
+      db.exec("ALTER TABLE news ADD COLUMN image TEXT");
+    }
+
+    const serviceCols = db.prepare("PRAGMA table_info(services)").all() as { name: string }[];
+    if (!serviceCols.some(c => c.name === 'description')) {
+      db.exec("ALTER TABLE services ADD COLUMN description TEXT");
+    }
+
+    // Initialisation des settings par défaut (si absents)
+    const insertSetting = db.prepare(`INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)`);
+    insertSetting.run('qualiopi_visible', '1');
+    insertSetting.run('qualiopi_text', "La certification qualité a été délivrée au titre des catégories d'actions suivantes :\nACTIONS DE FORMATION\nBILANS DE COMPÉTENCES");
+    insertSetting.run('qualiopi_logo', '');
   }
   return db;
 };

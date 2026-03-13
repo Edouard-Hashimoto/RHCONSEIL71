@@ -3,7 +3,7 @@ definePageMeta({ middleware: 'auth' })
 
 const { data: services, refresh } = await useFetch('/api/services')
 
-const newService = ref({ title: '', color: '#6b21a8' })
+const newService = ref({ title: '', color: '#6b21a8', description: '' })
 const editingId = ref(null)
 const editData = ref({})
 const uploading = ref(false)
@@ -39,7 +39,7 @@ const createService = async (evt) => {
     let logo = null
     if (file) logo = await uploadLogo(file)
     await $fetch('/api/services', { method: 'POST', body: { ...newService.value, logo } })
-    newService.value = { title: '', color: '#6b21a8' }
+    newService.value = { title: '', color: '#6b21a8', description: '' }
     if (fileInput) fileInput.value = ''
     await refresh()
   } catch (e) {
@@ -157,7 +157,11 @@ const deleteService = async (id) => {
             <label>Logo (image)</label>
             <input type="file" accept="image/*" class="file-input" />
           </div>
-          <div class="field" style="padding-top: 1.4rem;">
+          <div class="field basis-full">
+            <label>Description</label>
+            <textarea v-model="newService.description" placeholder="Description du service..." rows="3"></textarea>
+          </div>
+          <div class="field" style="padding-top: 0.5rem; width: 100%; display: flex; justify-content: flex-end;">
             <button type="submit" :disabled="saving || uploading" class="btn-primary">
               <span v-if="saving || uploading" class="spinner-sm"></span>
               {{ (saving || uploading) ? '...' : 'Ajouter' }}
@@ -182,7 +186,7 @@ const deleteService = async (id) => {
             <thead>
               <tr>
                 <th>Couleur</th>
-                <th>Titre</th>
+                <th>Titre / Description</th>
                 <th>Logo</th>
                 <th class="text-right">Actions</th>
               </tr>
@@ -191,7 +195,10 @@ const deleteService = async (id) => {
               <tr v-for="service in services" :key="service.id">
                 <template v-if="editingId === service.id">
                   <td><input v-model="editData.color" type="color" class="color-pick-small" /></td>
-                  <td><input v-model="editData.title" class="edit-input" /></td>
+                  <td>
+                    <input v-model="editData.title" class="edit-input mb-2" style="width: 100%;" />
+                    <textarea v-model="editData.description" class="edit-input" style="width: 100%; font-size: 0.8rem;" rows="2"></textarea>
+                  </td>
                   <td>
                     <div class="logo-edit">
                       <img v-if="editData.logo" :src="`/logos/${editData.logo}`" class="logo-thumb" />
@@ -207,7 +214,10 @@ const deleteService = async (id) => {
                   <td>
                     <div class="color-swatch" :style="{ background: service.color }"></div>
                   </td>
-                  <td class="service-name">{{ service.title }}</td>
+                  <td>
+                    <div class="service-name">{{ service.title }}</div>
+                    <div class="service-desc-preview">{{ service.description?.substring(0, 60) }}{{ (service.description?.length > 60) ? '...' : '' }}</div>
+                  </td>
                   <td>
                     <img v-if="service.logo" :src="`/logos/${service.logo}`" class="logo-thumb" />
                     <span v-else class="no-logo">Aucun</span>
@@ -299,6 +309,10 @@ const deleteService = async (id) => {
 .field label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; }
 .field input[type="text"] { padding: 0.65rem 0.85rem; border: 1.5px solid #e2e8f0; border-radius: 9px; font-size: 0.875rem; color: #1e293b; background: #f8fafc; outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
 .field input[type="text"]:focus { border-color: #e91e8c; box-shadow: 0 0 0 3px rgba(233,30,140,0.08); background: #fff; }
+.field textarea { padding: 0.65rem 0.85rem; border: 1.5px solid #e2e8f0; border-radius: 9px; font-size: 0.875rem; color: #1e293b; background: #f8fafc; outline: none; transition: border-color 0.2s, box-shadow 0.2s; resize: vertical; }
+.field textarea:focus { border-color: #e91e8c; box-shadow: 0 0 0 3px rgba(233,30,140,0.08); background: #fff; }
+.field.basis-full { flex: 0 0 100%; }
+.mb-2 { margin-bottom: 0.5rem; }
 .color-input { display: flex; align-items: center; gap: 0.5rem; }
 .color-input input[type="color"] { width: 40px; height: 38px; border-radius: 8px; border: 1.5px solid #e2e8f0; padding: 2px; cursor: pointer; }
 .color-hex { font-size: 0.75rem; font-family: monospace; color: #64748b; }
@@ -321,7 +335,8 @@ const deleteService = async (id) => {
 .text-right { text-align: right !important; }
 
 .color-swatch { width: 28px; height: 28px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.1); }
-.service-name { font-weight: 600; color: #1e293b; }
+.service-name { font-weight: 600; color: #1e293b; margin-bottom: 0.2rem; }
+.service-desc-preview { font-size: 0.75rem; color: #64748b; line-height: 1.4; }
 .logo-thumb { width: 32px; height: 32px; object-fit: contain; border-radius: 6px; background: #f8fafc; border: 1px solid #e2e8f0; }
 .no-logo { font-size: 0.75rem; color: #cbd5e1; }
 

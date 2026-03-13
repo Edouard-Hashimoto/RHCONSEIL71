@@ -1,7 +1,7 @@
 export default defineEventHandler(async (event) => {
   const db = useDb();
   
-  const count = db.prepare('SELECT COUNT(*) as count FROM news').get();
+  const count = db.prepare('SELECT COUNT(*) as count FROM news').get() as { count: number };
   
   if (count.count === 0) {
     const insert = db.prepare('INSERT INTO news (title, content, date) VALUES (?, ?, ?)');
@@ -22,6 +22,20 @@ export default defineEventHandler(async (event) => {
     );
   }
   
+  const query = getQuery(event);
+  const id = query.id;
+
+  if (id) {
+    const news = db.prepare('SELECT * FROM news WHERE id = ?').get(id);
+    if (!news) {
+      throw createError({
+        statusCode: 404,
+        statusMessage: 'Article non trouvé'
+      });
+    }
+    return news;
+  }
+
   const news = db.prepare('SELECT * FROM news ORDER BY date DESC').all();
   return news;
 });

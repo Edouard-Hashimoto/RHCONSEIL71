@@ -1,16 +1,36 @@
-<script setup>
+﻿<script setup>
 definePageMeta({ middleware: 'auth' })
-
 const { data: news, refresh } = await useFetch('/api/news')
 const newArticle = ref({ title: '', content: '' })
 const isSending = ref(false)
+const imageFile = ref(null)
+const fileInput = ref(null)
+
+const stripHtml = (html) => {
+  if (!html) return ''
+  return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
+}
+
+const handleFileChange = (e) => {
+  imageFile.value = e.target.files[0]
+}
 
 const addArticle = async () => {
   if (!newArticle.value.title || !newArticle.value.content) return
   isSending.value = true
+  
+  const formData = new FormData()
+  formData.append('title', newArticle.value.title)
+  formData.append('content', newArticle.value.content)
+  if (imageFile.value) {
+    formData.append('image', imageFile.value)
+  }
+
   try {
-    await $fetch('/api/news', { method: 'POST', body: newArticle.value })
+    await $fetch('/api/news', { method: 'POST', body: formData })
     newArticle.value = { title: '', content: '' }
+    imageFile.value = null
+    if (fileInput.value) fileInput.value.value = ''
     await refresh()
   } catch (e) {
     alert("Erreur lors de l'ajout")
@@ -35,6 +55,61 @@ const handleLogout = async () => {
     navigateTo('/admin/login')
   } catch (e) {
     alert("Erreur lors de la déconnexion")
+  }
+}
+
+// Qualiopi Settings
+const { data: settingsData } = await useFetch('/api/settings')
+const qualiopiVisible = ref(settingsData.value?.qualiopi_visible === '1')
+const qualiopiText = ref(settingsData.value?.qualiopi_text ?? '')
+const qualiopiLogoUrl = ref(settingsData.value?.qualiopi_logo || '')
+const qualiopiLogoFile = ref(null)
+const qualiopiLogoInput = ref(null)
+const isSavingSettings = ref(false)
+const settingsSaved = ref(false)
+const isUploadingLogo = ref(false)
+const logoUploaded = ref(false)
+
+const handleLogoChange = (e) => {
+  qualiopiLogoFile.value = e.target.files[0] || null
+}
+
+const uploadQualiopiLogo = async () => {
+  if (!qualiopiLogoFile.value) return
+  isUploadingLogo.value = true
+  try {
+    const formData = new FormData()
+    formData.append('file', qualiopiLogoFile.value)
+    const result = await $fetch('/api/upload-qualiopi', { method: 'POST', body: formData })
+    qualiopiLogoUrl.value = result.path
+    qualiopiLogoFile.value = null
+    if (qualiopiLogoInput.value) qualiopiLogoInput.value.value = ''
+    logoUploaded.value = true
+    setTimeout(() => { logoUploaded.value = false }, 3000)
+  } catch (e) {
+    alert("Erreur lors de l'upload du logo")
+  } finally {
+    isUploadingLogo.value = false
+  }
+}
+
+const saveSettings = async () => {
+  isSavingSettings.value = true
+  settingsSaved.value = false
+  try {
+    await $fetch('/api/settings', {
+      method: 'PUT',
+      body: {
+        qualiopi_visible: qualiopiVisible.value ? '1' : '0',
+        qualiopi_text: qualiopiText.value,
+      }
+    })
+    settingsSaved.value = true
+    setTimeout(() => { settingsSaved.value = false }, 3000)
+  } catch (e) {
+    alert('Erreur lors de la sauvegarde des paramètres')
+  } finally {
+    isSavingSettings.value = false
   }
 }
 </script>
@@ -102,9 +177,13 @@ const handleLogout = async () => {
             <label>Titre</label>
             <input v-model="newArticle.title" type="text" placeholder="Titre de l'actualité" required />
           </div>
+          <div class="field">
+            <label>Image d'illustration (optionnel)</label>
+            <input @change="handleFileChange" type="file" accept="image/*" ref="fileInput" />
+          </div>
           <div class="field span-full">
             <label>Contenu</label>
-            <textarea v-model="newArticle.content" rows="5" placeholder="Rédigez le contenu de l'article..." required></textarea>
+            <RichEditor v-model="newArticle.content" />
           </div>
           <div class="span-full">
             <button type="submit" :disabled="isSending" class="btn-primary">
@@ -128,7 +207,7 @@ const handleLogout = async () => {
             <div class="news-item-info">
               <span class="news-date">{{ new Date(item.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) }}</span>
               <p class="news-title">{{ item.title }}</p>
-              <p class="news-preview">{{ item.content.slice(0, 120) }}{{ item.content.length > 120 ? '…' : '' }}</p>
+              <p class="news-preview">{{ stripHtml(item.content).slice(0, 120) }}{{ stripHtml(item.content).length > 120 ? '…' : '' }}</p>
             </div>
             <button @click="deleteArticle(item.id)" class="btn-delete" title="Supprimer">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
@@ -136,6 +215,49 @@ const handleLogout = async () => {
           </div>
         </div>
       </section>
+      <section class="card">
+        <h2 class="card-title">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
+          Paramètres du site
+        </h2>
+        <div class="settings-block">
+          <div class="settings-row">
+            <div class="settings-label-group">
+              <span class="settings-label">Section Qualiopi dans le footer</span>
+              <span class="settings-hint">Affiche ou masque le logo et le texte Qualiopi</span>
+            </div>
+            <button type="button" class="toggle-btn" :class="{ 'toggle-on': qualiopiVisible }" @click="qualiopiVisible = !qualiopiVisible">
+              <span class="toggle-thumb"></span>
+            </button>
+          </div>
+          <div v-if="qualiopiVisible" class="field span-full" style="margin-top: 1rem;">
+            <label>Logo Qualiopi</label>
+            <div class="logo-upload-row">
+              <img v-if="qualiopiLogoUrl" :src="qualiopiLogoUrl" alt="Logo Qualiopi actuel" class="logo-preview" />
+              <div class="logo-upload-controls">
+                <input ref="qualiopiLogoInput" type="file" accept="image/*" @change="handleLogoChange" />
+                <button type="button" @click="uploadQualiopiLogo" :disabled="!qualiopiLogoFile || isUploadingLogo" class="btn-primary">
+                  <span v-if="isUploadingLogo" class="spinner"></span>
+                  {{ isUploadingLogo ? 'Upload...' : 'Remplacer le logo' }}
+                </button>
+                <span v-if="logoUploaded" class="saved-badge">✓ Logo mis à jour</span>
+              </div>
+            </div>
+          </div>
+          <div v-if="qualiopiVisible" class="field span-full" style="margin-top: 1rem;">
+            <label>Texte affiché sous le logo Qualiopi</label>
+            <textarea v-model="qualiopiText" rows="4" placeholder="Texte de certification..."></textarea>
+          </div>
+          <div class="settings-actions">
+            <button type="button" @click="saveSettings" :disabled="isSavingSettings" class="btn-primary">
+              <span v-if="isSavingSettings" class="spinner"></span>
+              {{ isSavingSettings ? 'Sauvegarde...' : 'Enregistrer' }}
+            </button>
+            <span v-if="settingsSaved" class="saved-badge">✓ Enregistré</span>
+          </div>
+        </div>
+      </section>
+
     </div>
   </div>
 </template>
@@ -475,4 +597,20 @@ const handleLogout = async () => {
   font-size: 0.9rem;
   color: #94a3b8;
 }
+
+.settings-block { display: flex; flex-direction: column; gap: 0.5rem; }
+.settings-row { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid #f1f5f9; }
+.settings-label-group { display: flex; flex-direction: column; gap: 0.2rem; }
+.settings-label { font-size: 0.9rem; font-weight: 600; color: #1e293b; }
+.settings-hint { font-size: 0.78rem; color: #94a3b8; }
+.toggle-btn { position: relative; width: 44px; height: 24px; border-radius: 50px; border: none; background: #cbd5e1; cursor: pointer; transition: background 0.25s; flex-shrink: 0; }
+.toggle-btn.toggle-on { background: #e91e8c; }
+.toggle-thumb { position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.2); transition: transform 0.25s; }
+.toggle-on .toggle-thumb { transform: translateX(20px); }
+.settings-actions { display: flex; align-items: center; gap: 1rem; margin-top: 1.25rem; }
+.saved-badge { font-size: 0.82rem; font-weight: 600; color: #22c55e; }
+.logo-upload-row { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.logo-preview { width: 160px; height: auto; object-fit: contain; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 0.5rem; background: #f8fafc; }
+.logo-upload-controls { display: flex; flex-direction: column; gap: 0.6rem; }
 </style>
+

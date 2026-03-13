@@ -34,7 +34,6 @@ export default defineNuxtConfig({
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
         {
           name: 'description',
-          content: 'RH Conseil 71 accompagne les entreprises dans leur développement RH : recrutement, formation, audit social, et conseils en ressources humaines en Saône-et-Loire.'
         }
       ],
       link: [
