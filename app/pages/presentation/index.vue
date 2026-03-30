@@ -1,4 +1,6 @@
-﻿<script setup>
+<script setup>
+const { data: equipe } = await useFetch('/api/equipe')
+
 useHead({
   title: 'Qui sommes-nous ? - RH Conseil 71',
   meta: [{ name: 'description', content: 'Découvrez l\'équipe de RH Conseil 71, cabinet RH à taille humaine créé en 2004.' }]
@@ -38,35 +40,16 @@ useHead({
       <div class="members-inner">
         <div class="members-grid">
           
-          <div class="member-card">
+          <NuxtLink v-for="membre in equipe" :key="membre.id" :to="`/presentation/${membre.id}`" class="member-card">
             <div class="member-photo-wrap">
-              <img src="~/assets/img/Fanny_Borel.jpg" alt="Fanny BOREL" class="member-photo" />
+              <img v-if="membre.image" :src="`/equipe-images/${membre.image}`" :alt="membre.nom" class="member-photo" />
+              <div v-else class="member-photo bg-gray-200"></div>
             </div>
             <div class="member-info">
-              <h3 class="member-name">Fanny BOREL</h3>
-              <p class="member-role">Consultante RH</p>
+              <h3 class="member-name">{{ membre.nom }}</h3>
+              <p class="member-role">{{ membre.role }}</p>
             </div>
-          </div>
-
-          <div class="member-card">
-            <div class="member-photo-wrap">
-              <img src="~/assets/img/Muriel_Niederlaender1.jpg" alt="Muriel NIEDERLAENDER" class="member-photo" />
-            </div>
-            <div class="member-info">
-              <h3 class="member-name">Muriel NIEDERLAENDER</h3>
-              <p class="member-role">Psychologue du travail<br>Directeur délégué</p>
-            </div>
-          </div>
-
-          <div class="member-card">
-            <div class="member-photo-wrap">
-              <img src="~/assets/img/Charline_Fleury-Flaure.jpg" alt="Charline FLEURY-FAURE" class="member-photo" />
-            </div>
-            <div class="member-info">
-              <h3 class="member-name">Charline FLEURY-FAURE</h3>
-              <p class="member-role">Psychologue du travail</p>
-            </div>
-          </div>
+          </NuxtLink>
 
         </div>
       </div>
@@ -101,7 +84,7 @@ useHead({
 .pres-hero {
   position: relative;
   width: 100%;
-  height: 260px;
+  height: 180px;
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -133,16 +116,16 @@ useHead({
 }
 
 .hero-title {
-  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
   font-weight: 800;
   color: #fff;
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
   margin: 0;
 }
 
 .team-section {
   background: var(--color-bg);
-  padding: 5rem 0 6rem;
+  padding: 3rem 0 4rem;
 }
 
 .team-inner {
@@ -237,6 +220,8 @@ useHead({
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.5);
   height: 100%;
+  text-decoration: none;
+  color: inherit;
 }
 
 .member-card:hover {

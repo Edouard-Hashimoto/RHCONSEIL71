@@ -34,7 +34,49 @@ export const useDb = () => {
         key TEXT PRIMARY KEY,
         value TEXT NOT NULL
       );
+
+      CREATE TABLE IF NOT EXISTS particuliers (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        titre TEXT NOT NULL,
+        description_courte TEXT NOT NULL,
+        description_complete TEXT NOT NULL,
+        picto TEXT,
+        image TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS equipe (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        slug TEXT NOT NULL,
+        nom TEXT NOT NULL,
+        role TEXT NOT NULL,
+        description TEXT,
+        image TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS categories (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        titre TEXT NOT NULL,
+        image TEXT,
+        description TEXT,
+        parent_id INTEGER REFERENCES categories(id),
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS statistics (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        text TEXT NOT NULL,
+        image TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
     `);
+
+    const catCols = db.prepare("PRAGMA table_info(categories)").all() as { name: string }[];
+    if (!catCols.some(c => c.name === 'parent_id')) {
+      db.exec("ALTER TABLE categories ADD COLUMN parent_id INTEGER REFERENCES categories(id)");
+    }
 
     const cols = db.prepare("PRAGMA table_info(news)").all() as { name: string }[];
     if (!cols.some(c => c.name === 'image')) {
@@ -44,6 +86,14 @@ export const useDb = () => {
     const serviceCols = db.prepare("PRAGMA table_info(services)").all() as { name: string }[];
     if (!serviceCols.some(c => c.name === 'description')) {
       db.exec("ALTER TABLE services ADD COLUMN description TEXT");
+    }
+    if (!serviceCols.some(c => c.name === 'category_id')) {
+      db.exec("ALTER TABLE services ADD COLUMN category_id INTEGER REFERENCES categories(id)");
+    }
+
+    const partCols = db.prepare("PRAGMA table_info(particuliers)").all() as { name: string }[];
+    if (!partCols.some(c => c.name === 'color')) {
+      db.exec("ALTER TABLE particuliers ADD COLUMN color TEXT DEFAULT '#42B9B5'");
     }
 
     // Initialisation des settings par défaut (si absents)

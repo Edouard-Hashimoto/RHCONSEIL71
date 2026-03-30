@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 const route = useRoute()
 const { data: article } = await useFetch('/api/news', { query: { id: route.params.id } })
 
@@ -24,7 +24,7 @@ useHead({
       </header>
 
       <div v-if="article.image" class="article-img-wrap">
-        <img :src="`/uploads/${article.image}`" :alt="article.title" class="article-img" />
+        <img :src="`/uploads/news/${article.image}`" :alt="article.title" class="article-img" />
       </div>
 
       <div class="article-body" v-html="article.content"></div>
@@ -82,11 +82,21 @@ useHead({
 }
 
 .article-img {
-  width: 100%;
+  max-width: 100%;
+  max-height: 380px;
+  width: auto;
   height: auto;
-  max-height: 420px;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
+  margin: 0 auto;
+}
+
+.article-img-wrap {
+  margin-bottom: 2rem;
+  border-radius: 14px;
+  overflow: hidden;
+  background-color: #fff;
+  border: 1px solid #eee;
 }
 
 .article-body {

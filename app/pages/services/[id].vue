@@ -15,11 +15,13 @@ useHead({
 <template>
   <div class="service-detail-page">
     <div v-if="service" class="service-container">
-      
-      <!-- Fil d'ariane -->
       <nav class="breadcrumb">
         <NuxtLink to="/">Accueil</NuxtLink>
         <span class="sep">/</span>
+        <template v-if="service.category_id">
+          <NuxtLink :to="`/categories/${service.category_id}`">{{ service.category_titre }}</NuxtLink>
+          <span class="sep">/</span>
+        </template>
         <span class="curr">{{ service.title }}</span>
       </nav>
 
@@ -44,10 +46,19 @@ useHead({
         </div>
 
         <aside class="service-sidebar">
+          <div v-if="service.category_id" class="sidebar-categories">
+            <span class="sidebar-label">Catégorie</span>
+            <div class="tags-list">
+              <NuxtLink :to="`/categories/${service.category_id}`" class="category-tag">
+                {{ service.category_titre }}
+              </NuxtLink>
+            </div>
+          </div>
+
           <div class="contact-card">
             <h3>Besoin d'accompagnement ?</h3>
             <p>Notre équipe d'experts est à votre écoute pour répondre à vos besoins spécifiques.</p>
-            <NuxtLink to="/contact" class="btn-contact">Contactez-nous</NuxtLink>
+            <NuxtLink to="/contact" class="btn-contact" :style="{ background: service.color }">Contactez-nous</NuxtLink>
           </div>
         </aside>
       </div>
@@ -165,6 +176,51 @@ useHead({
   gap: 2rem;
 }
 
+.sidebar-categories {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 20px;
+  border: 1px solid #e2e8f0;
+}
+
+.sidebar-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #94a3b8;
+  letter-spacing: 0.05em;
+}
+
+.tags-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.category-tag {
+  background: white;
+  border: 1px solid #e2e8f0;
+  color: #F7A600;
+  padding: 0.5rem 1.2rem;
+  border-radius: 50px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.category-tag:hover {
+  background: #F7A600;
+  color: white;
+  border-color: #F7A600;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(233, 30, 140, 0.2);
+}
+
 .contact-card {
   background: #fff;
   padding: 2rem;
@@ -190,7 +246,6 @@ useHead({
 .btn-contact {
   display: block;
   padding: 0.75rem;
-  background-color: #e91e8c;
   color: #fff;
   text-decoration: none;
   border-radius: 50px;
@@ -199,7 +254,6 @@ useHead({
 }
 
 .btn-contact:hover {
-  background-color: #c01874;
   transform: translateY(-2px);
 }
 

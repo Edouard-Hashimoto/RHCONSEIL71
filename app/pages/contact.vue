@@ -2,7 +2,6 @@
   <div class="contact-page">
     <div class="contact-container">
       <div class="contact-grid">
-        <!-- Form Section -->
         <div class="contact-form-section">
           <h1 class="contact-title">Contact</h1>
           <div class="title-bar"></div>
@@ -37,7 +36,6 @@
           </form>
         </div>
 
-        <!-- Map Section -->
         <div class="contact-map-section">
           <div id="map" class="leaflet-map-container"></div>
         </div>
@@ -268,7 +266,6 @@ textarea {
   z-index: 10;
 }
 
-/* Responsive */
 @media (max-width: 1000px) {
   .contact-grid {
     grid-template-columns: 1fr;

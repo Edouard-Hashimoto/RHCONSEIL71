@@ -1,6 +1,10 @@
 <script setup>
 const { data: news } = await useFetch('/api/news')
 const { data: services } = await useFetch('/api/services')
+const { data: statistics } = await useFetch('/api/statistics')
+
+const mainStat = computed(() => statistics.value && statistics.value.length > 0 ? statistics.value[0] : null)
+const latestNews = computed(() => news.value && news.value.length > 0 ? news.value[0] : null)
 
 const servicesWithVideo = computed(() => {
   const baseServices = services.value || []
@@ -47,28 +51,28 @@ onMounted(() => {
         </div>
       </div>
     </section>
-
-    <!-- Dashboard Section -->
     <section class="dashboard-section">
       <div class="dashboard-inner">
 
-        <!-- Colonne gauche: 2 cards statiques -->
         <div class="left-col">
-          <div class="stat-card">
+          <NuxtLink to="/statistiques" class="stat-card stat-link">
+            <img v-if="mainStat?.image" :src="`/uploads/stats/${mainStat.image}`" class="stat-card-bg" alt="Stats background" />
             <div class="stat-card-body">
               <span class="stat-card-label">Statistiques</span>
-              <h2 class="stat-card-title">Statistiques 2024-2025</h2>
+              <h2 class="stat-card-title">{{ mainStat?.title || 'Statistiques 2024-2025' }}</h2>
+              <p class="stat-card-action">Voir les statistiques →</p>
             </div>
-          </div>
-          <div class="stat-card actu">
+          </NuxtLink>
+          <NuxtLink to="/articles" class="stat-card actu stat-link">
+            <img v-if="latestNews?.image" :src="`/uploads/news/${latestNews.image}`" class="stat-card-bg stat-bg-actu" alt="Actualités" />
             <div class="stat-card-body">
               <span class="stat-card-label">Agenda</span>
-              <h2 class="stat-card-title">Actualités du moment !</h2>
+              <h2 class="stat-card-title">{{ latestNews?.title || 'Actualités du moment !' }}</h2>
+              <p class="stat-card-action actu-action">Voir les actualités →</p>
             </div>
-          </div>
+          </NuxtLink>
         </div>
 
-        <!-- Colonne droite: grille dynamique de services -->
         <div class="right-col">
           <div class="services-grid">
             <template v-for="item in servicesWithVideo" :key="item.id">
@@ -106,8 +110,6 @@ onMounted(() => {
 
       </div>
     </section>
-
-    <!-- Presentation Section -->
     <section class="presentation-section">
       <div class="pres-inner">
         <div class="pres-text">
@@ -123,35 +125,30 @@ onMounted(() => {
       </div>
     </section>
 
-    <!-- Missions Section -->
     <section class="missions-section">
       <div class="missions-inner">
         <h2 class="missions-title">
           Nos missions sont assurées par une équipe opérationnelle pluridisciplinaire et complémentaire&nbsp;:
         </h2>
         <div class="missions-grid">
-          <!-- Card 1 -->
           <div class="mission-card card-lime">
             <div class="mission-icon-wrap">
               <img src="~/assets/picto/Sante.png" alt="Psychologues du travail" />
             </div>
             <p class="mission-label">Psychologues<br>du travail</p>
           </div>
-          <!-- Card 2 -->
           <div class="mission-card card-pink">
             <div class="mission-icon-wrap">
               <img src="~/assets/picto/Accompagnement_RH_.png" alt="Consultants RH" />
             </div>
             <p class="mission-label">Consultants RH</p>
           </div>
-          <!-- Card 3 -->
           <div class="mission-card card-orange">
             <div class="mission-icon-wrap">
               <img src="~/assets/picto/QSE.png" alt="Consultant QHSE" />
             </div>
             <p class="mission-label">Consultant QHSE</p>
           </div>
-          <!-- Card 4 -->
           <div class="mission-card card-teal">
             <div class="mission-icon-wrap">
               <img src="~/assets/picto/Juridique.png" alt="Juristes en droit social" />
@@ -162,7 +159,6 @@ onMounted(() => {
       </div>
     </section>
 
-    <!-- Qualiopi Section -->
     <section class="qualiopi-section">
       <div class="qualiopi-bg-icon">
         <img src="~/assets/picto/award.png" alt="" />
@@ -181,7 +177,7 @@ onMounted(() => {
               </svg>
               Télécharger
             </a>
-            <NuxtLink to="https://www.qualite-formation.pm/qualiopi" target="_blank" class="btn-certif btn-more">En savoir plus</NuxtLink>
+            <NuxtLink to="/qualiopi" class="btn-certif btn-more">En savoir plus</NuxtLink>
           </div>
         </div>
       </div>
@@ -191,10 +187,8 @@ onMounted(() => {
 </template>
 
 <style scoped>
-/* === Hero === */
 .hero-section {
   background-color: #efefef;
-  margin-top: 70px;
   width: 100%;
 }
 
@@ -221,13 +215,15 @@ onMounted(() => {
 }
 
 .hero-accent {
-  color: #e91e8c;
+  color: #BA0F60;
 }
+
 
 .hero-img {
   flex: 0 0 64%;
   align-self: stretch;
   overflow: hidden;
+  padding: 2rem;
 }
 
 .hero-img img {
@@ -238,7 +234,7 @@ onMounted(() => {
   object-position: left center;
 }
 
-/* === Presentation === */
+
 .presentation-section {
   background-color: #efefef;
   padding: 4rem 1rem 6rem;
@@ -264,7 +260,7 @@ onMounted(() => {
 }
 
 .pres-title strong {
-  color: #e91e8c;
+  color: #BA0F60;
   font-weight: 700;
 }
 
@@ -279,7 +275,7 @@ onMounted(() => {
   display: inline-block;
   margin-top: 1rem;
   padding: 0.8rem 1.8rem;
-  background-color: #e91e8c;
+  background-color: #BA0F60;
   color: #fff;
   font-weight: 700;
   text-decoration: none;
@@ -327,7 +323,6 @@ onMounted(() => {
   }
 }
 
-/* === News Section === */
 .news-section {
   padding: 6rem 1rem;
   background-color: #fcfcfc;
@@ -474,7 +469,6 @@ onMounted(() => {
   max-width: 1200px;
 }
 
-/* === Responsive === */
 @media (max-width: 768px) {
   .hero-inner {
     flex-direction: column;
@@ -498,7 +492,6 @@ onMounted(() => {
   }
 }
 
-/* === Dashboard === */
 .dashboard-section {
   background: #efefef;
   padding: 2rem 0 3rem;
@@ -513,7 +506,6 @@ onMounted(() => {
   align-items: stretch;
 }
 
-/* Left column */
 .left-col {
   flex: 0 0 38%;
   display: flex;
@@ -559,7 +551,48 @@ onMounted(() => {
   line-height: 1.2;
 }
 
-/* Right column */
+.stat-link {
+  text-decoration: none;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.stat-link:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+.stat-card-action {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #e91e8c;
+  margin-top: 0.5rem;
+  background: #fff;
+  display: inline-block;
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+}
+
+.actu-action {
+  color: #2d4a3e;
+}
+
+.stat-card-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.3;
+  z-index: 0;
+  transition: opacity 0.3s, transform 0.5s;
+}
+
+.stat-link:hover .stat-card-bg {
+  opacity: 0.4;
+  transform: scale(1.05);
+}
+
 .right-col {
   flex: 1;
 }
@@ -630,7 +663,6 @@ onMounted(() => {
   border: none;
 }
 
-/* === Responsive === */
 @media (max-width: 900px) {
   .dashboard-inner {
     flex-direction: column;
@@ -667,16 +699,52 @@ onMounted(() => {
     object-fit: contain;
   }
 
+  .dashboard-inner {
+    padding: 0 1rem;
+    gap: 1rem;
+  }
+
   .left-col {
-    flex-direction: column;
+    flex-direction: row;
+    gap: 1rem;
+  }
+
+  .stat-card {
+    min-height: 140px;
+  }
+
+  .stat-card-body {
+    padding: 1rem;
+  }
+
+  .stat-card-title {
+    font-size: 1rem;
+  }
+
+  .stat-card-label {
+    font-size: 0.6rem;
+  }
+
+  .stat-card-action {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.6rem;
   }
 
   .services-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.8rem;
+  }
+
+  .service-card {
+    padding: 1rem;
+    min-height: 110px;
+  }
+
+  .service-title {
+    font-size: 0.8rem;
   }
 }
 
-/* === Missions === */
 .missions-section {
   padding: 5rem 1.5rem 8rem;
   background-color: #efefef;
@@ -750,12 +818,26 @@ onMounted(() => {
 
 @media (max-width: 600px) {
   .missions-grid {
-    grid-template-columns: 1fr;
-    padding: 0 1rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.8rem;
+    padding: 0 0.5rem;
+  }
+
+  .mission-card {
+    padding: 1.5rem 1rem;
+    border-radius: 16px;
+  }
+
+  .mission-icon-wrap {
+    height: 60px;
+    margin-bottom: 1rem;
+  }
+
+  .mission-label {
+    font-size: 0.85rem;
   }
 }
 
-/* === Qualiopi === */
 .qualiopi-section {
   position: relative;
   background-color: var(--color-bg);

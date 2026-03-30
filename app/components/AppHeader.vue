@@ -36,7 +36,7 @@
       </button>
     </div>
 
-    <nav class="mobile-nav" :class="{ open: menuOpen }" aria-label="Navigation mobile">
+      <nav class="mobile-nav" :class="{ open: menuOpen }" aria-label="Navigation mobile">
       <ul class="mobile-nav-list">
         <li><NuxtLink to="/presentation" class="mobile-nav-link" @click="menuOpen = false">Qui sommes-nous ?</NuxtLink></li>
         <li class="mobile-has-sub">
@@ -125,7 +125,7 @@ const { data: services } = await useFetch('/api/services')
 
 .nav-link:hover,
 .nav-link.router-link-active {
-  color: #e91e8c;
+  color: #BA0F60;
 }
 
 /* Dropdown logic */
@@ -188,6 +188,51 @@ const { data: services } = await useFetch('/api/services')
   background-color: #f7f9fc;
   color: #e91e8c;
   padding-left: 1.8rem;
+}
+
+.dropdown-cat-header {
+  padding: 0.6rem 1.25rem 0.3rem;
+}
+
+.cat-link {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #e91e8c;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.cat-link:hover {
+  opacity: 0.8;
+}
+
+.sub-link {
+  padding-left: 2rem;
+  font-size: 0.9rem;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: #f0f0f0;
+  margin: 0.5rem 0;
+}
+
+.mobile-cat-header {
+  padding: 0.75rem 0.5rem 0.25rem;
+}
+
+.mobile-cat-header a {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #e91e8c;
+  text-decoration: none;
+}
+
+.pl-6 {
+  padding-left: 1.5rem !important;
 }
 
 .burger {

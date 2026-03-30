@@ -1,9 +1,14 @@
 <script setup>
 definePageMeta({ middleware: 'auth' })
 
-const { data: services, refresh } = await useFetch('/api/services')
+const { data: services, refresh: refreshServices } = await useFetch('/api/services')
+const { data: categories } = await useFetch('/api/categories')
 
-const newService = ref({ title: '', color: '#6b21a8', description: '' })
+const refresh = async () => {
+  await refreshServices()
+}
+
+const newService = ref({ title: '', color: '#6b21a8', description: '', category_id: null })
 const editingId = ref(null)
 const editData = ref({})
 const uploading = ref(false)
@@ -39,7 +44,7 @@ const createService = async (evt) => {
     let logo = null
     if (file) logo = await uploadLogo(file)
     await $fetch('/api/services', { method: 'POST', body: { ...newService.value, logo } })
-    newService.value = { title: '', color: '#6b21a8', description: '' }
+    newService.value = { title: '', color: '#6b21a8', description: '', category_id: null }
     if (fileInput) fileInput.value = ''
     await refresh()
   } catch (e) {
@@ -104,6 +109,22 @@ const deleteService = async (id) => {
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" /></svg>
           Services
         </NuxtLink>
+        <NuxtLink to="/admin/categories" class="nav-item">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581a2.25 2.25 0 003.182 0l4.318-4.318a2.25 2.25 0 000-3.182L11.159 3.659A2.25 2.25 0 009.568 3z" /><path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z" /></svg>
+          Catégories
+        </NuxtLink>
+        <NuxtLink to="/admin/particuliers" class="nav-item">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" /></svg>
+          Particuliers
+        </NuxtLink>
+        <NuxtLink to="/admin/equipe" class="nav-item">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" /></svg>
+          Équipe
+        </NuxtLink>
+        <NuxtLink to="/admin/statistics" class="nav-item">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" /></svg>
+          Statistiques
+        </NuxtLink>
 
         <p class="nav-section-label">Outils</p>
         <NuxtLink to="/admin/database" class="nav-item">
@@ -157,6 +178,13 @@ const deleteService = async (id) => {
             <label>Logo (image)</label>
             <input type="file" accept="image/*" class="file-input" />
           </div>
+          <div class="field grow">
+            <label>Catégorie</label>
+            <select v-model="newService.category_id" class="edit-input" style="height: 38px;">
+              <option :value="null">Aucune</option>
+              <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.titre }}</option>
+            </select>
+          </div>
           <div class="field basis-full">
             <label>Description</label>
             <textarea v-model="newService.description" placeholder="Description du service..." rows="3"></textarea>
@@ -186,6 +214,7 @@ const deleteService = async (id) => {
             <thead>
               <tr>
                 <th>Couleur</th>
+                <th>Catégorie</th>
                 <th>Titre / Description</th>
                 <th>Logo</th>
                 <th class="text-right">Actions</th>
@@ -195,6 +224,12 @@ const deleteService = async (id) => {
               <tr v-for="service in services" :key="service.id">
                 <template v-if="editingId === service.id">
                   <td><input v-model="editData.color" type="color" class="color-pick-small" /></td>
+                  <td>
+                    <select v-model="editData.category_id" class="edit-input" style="width: 100%;">
+                      <option :value="null">Aucune</option>
+                      <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.titre }}</option>
+                    </select>
+                  </td>
                   <td>
                     <input v-model="editData.title" class="edit-input mb-2" style="width: 100%;" />
                     <textarea v-model="editData.description" class="edit-input" style="width: 100%; font-size: 0.8rem;" rows="2"></textarea>
@@ -213,6 +248,12 @@ const deleteService = async (id) => {
                 <template v-else>
                   <td>
                     <div class="color-swatch" :style="{ background: service.color }"></div>
+                  </td>
+                  <td>
+                    <span v-if="service.category_id" class="stat-pill" style="font-size: 0.7rem; padding: 0.2rem 0.5rem;">
+                      {{ categories?.find(c => c.id === service.category_id)?.titre || '?' }}
+                    </span>
+                    <span v-else class="no-logo">Aucune</span>
                   </td>
                   <td>
                     <div class="service-name">{{ service.title }}</div>
@@ -263,10 +304,8 @@ const deleteService = async (id) => {
 </template>
 
 <style scoped>
-/* === Shared layout === */
 .admin-layout { display: flex; min-height: 100vh; background: #f1f5f9; }
 
-/* === Sidebar === */
 .sidebar {
   width: 220px; background: #1a1a2e;
   display: flex; flex-direction: column; flex-shrink: 0;
@@ -287,8 +326,6 @@ const deleteService = async (id) => {
 .sidebar-logout { margin-top: auto; display: flex; align-items: center; gap: 0.6rem; padding: 0.8rem 1rem; border-top: 1px solid rgba(255,255,255,0.08); background: none; border-left: none; border-right: none; border-bottom: none; color: rgba(255,255,255,0.45); font-size: 0.82rem; cursor: pointer; transition: color 0.2s; width: 100%; }
 .sidebar-logout svg { width: 17px; height: 17px; }
 .sidebar-logout:hover { color: #f87171; }
-
-/* === Main === */
 .main-content { flex: 1; padding: 2rem; display: flex; flex-direction: column; gap: 1.5rem; max-width: 960px; }
 
 .page-header { display: flex; align-items: flex-start; justify-content: space-between; }
@@ -302,7 +339,6 @@ const deleteService = async (id) => {
 .card-title { display: flex; align-items: center; gap: 0.5rem; font-size: 1rem; font-weight: 700; color: #1e293b; margin: 0 0 1.25rem; }
 .card-title svg { width: 18px; height: 18px; flex-shrink: 0; }
 
-/* === Form === */
 .form-row { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: flex-start; }
 .field { display: flex; flex-direction: column; gap: 0.35rem; }
 .field.grow { flex: 1; min-width: 140px; }
@@ -324,7 +360,6 @@ const deleteService = async (id) => {
 .spinner-sm { width: 13px; height: 13px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* === Table === */
 .services-table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid #f1f5f9; }
 .services-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
 .services-table thead tr { background: #f8fafc; }
@@ -356,7 +391,6 @@ const deleteService = async (id) => {
 
 .empty-state { padding: 2.5rem; text-align: center; color: #94a3b8; font-size: 0.875rem; }
 
-/* === Preview === */
 .preview-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
 .preview-card { border-radius: 12px; min-height: 80px; padding: 1rem; position: relative; overflow: hidden; display: flex; align-items: flex-start; transition: transform 0.2s; }
 .preview-card:hover { transform: translateY(-2px); }

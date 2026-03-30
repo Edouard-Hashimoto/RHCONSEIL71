@@ -7,14 +7,14 @@ export default defineEventHandler(async (event) => {
   const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-      user: process.env.SMTP_USER, // ed1015france@gmail.com
-      pass: process.env.SMTP_PASS, // App password needed
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS, 
     },
   });
 
   const mailOptions = {
     from: `"${nom} ${prenom}" <${email}>`,
-    to: 'ed1015france@gmail.com',
+    to: 'accueil@rhconseil71.com',
     subject: `Nouveau message de contact : ${nom} ${prenom}`,
     text: `
       Nom : ${nom}

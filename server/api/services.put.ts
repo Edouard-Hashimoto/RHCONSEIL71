@@ -5,8 +5,8 @@ export default defineEventHandler(async (event) => {
   }
 
   const db = useDb();
-  db.prepare('UPDATE services SET title = ?, color = ?, logo = ?, description = ? WHERE id = ?')
-    .run(body.title, body.color, body.logo ?? null, body.description ?? null, body.id);
+  db.prepare('UPDATE services SET title = ?, color = ?, logo = ?, description = ?, category_id = ? WHERE id = ?')
+    .run(body.title, body.color, body.logo ?? null, body.description ?? null, body.category_id ?? null, body.id);
 
   return { success: true };
 });

@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 const { data: settings } = await useFetch('/api/settings')
 
 const onQualiopiError = (e) => {
@@ -47,12 +47,14 @@ const onQualiopiError = (e) => {
       </div>
 
       <div v-if="settings?.qualiopi_visible === '1'" class="footer-col footer-qualiopi-col">
-        <img
-          :src="settings?.qualiopi_logo || '/assets/img/qualiopi.webp'"
-          alt="Qualiopi – Processus certifié"
-          class="qualiopi-logo"
-          @error="onQualiopiError"
-        />
+        <NuxtLink to="/qualiopi" class="qualiopi-link">
+          <img
+            :src="settings?.qualiopi_logo || '/assets/img/qualiopi.webp'"
+            alt="Qualiopi – Processus certifié"
+            class="qualiopi-logo"
+            @error="onQualiopiError"
+          />
+        </NuxtLink>
         <p v-if="settings?.qualiopi_text" class="qualiopi-caption" style="white-space: pre-line;">{{ settings.qualiopi_text }}</p>
       </div>
 
